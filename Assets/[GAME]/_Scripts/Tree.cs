@@ -1,7 +1,6 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Tree : PoolableObject
 {
@@ -11,8 +10,12 @@ public class Tree : PoolableObject
     [SerializeField] private float growAnimationDuration;
     [SerializeField] private AnimationCurve popOutCurve;
     [SerializeField] private AnimationCurve GrowAndBounceCurve;
+    [SerializeField] private float collapseAnimationDuration;
+    [SerializeField] private AnimationCurve collapseCurve;
 
-    private Queue<TreePiece> piecesCollection = new Queue<TreePiece>();
+    public event EventHandler treeDestroyed;
+
+    private Stack<TreePiece> piecesCollection = new Stack<TreePiece>();
 
     private enum GrowAnimationType
     {
@@ -24,7 +27,7 @@ public class Tree : PoolableObject
     public void GenerateTree()
     {
         //Generate a new trunk with a random size
-        GenerateTrunk(Random.Range(minMaxPiecesAmount.x, minMaxPiecesAmount.y));
+        GenerateTrunk(UnityEngine.Random.Range(minMaxPiecesAmount.x, minMaxPiecesAmount.y));
         AnimateTreeSpawn();
     }
 
@@ -38,8 +41,8 @@ public class Tree : PoolableObject
         //Clear the list of pieces if any still exists
         while (piecesCollection.Count > 0)
         {
-            TreePiece piece = piecesCollection.Dequeue();
-            piece.DestroyPiece();
+            TreePiece piece = piecesCollection.Pop();
+            piece.ReturnToPool();
         }
 
         //Create new pieces based on the size
@@ -48,36 +51,38 @@ public class Tree : PoolableObject
             TreePiece piece = treePiecesPool.GetPooledObject<TreePiece>();
             piece.transform.SetParent(trunkParent);
             piece.transform.SetAsFirstSibling();
-            piece.transform.localPosition = Vector3.up * i;
+            piece.transform.localPosition = -Vector3.up * i;
             piece.transform.localScale = Vector3.one;
-            piece.transform.localRotation = Quaternion.AngleAxis(Random.Range(0, 4) * 90, Vector3.up);
-            piecesCollection.Enqueue(piece);
+            piece.transform.localRotation = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 4) * 90, Vector3.up);
+            piecesCollection.Push(piece);
         }
     }
 
     public void AnimateTreeSpawn()
     {
         //Choose a random animation based on the enum
-        GrowAnimationType animationType = (GrowAnimationType)Random.Range(0, System.Enum.GetNames(typeof(GrowAnimationType)).Length);
-
+        GrowAnimationType animationType = (GrowAnimationType)UnityEngine.Random.Range(0, Enum.GetNames(typeof(GrowAnimationType)).Length);
+        animationType = GrowAnimationType.GrowOut;
+        //Execute the animation based on the chose value
         switch (animationType)
         {
             case GrowAnimationType.PopOut:
                 StartCoroutine(Helper.AnimationRoutine(growAnimationDuration, t =>
                 {
                     trunkParent.localScale = Vector3.one * popOutCurve.Evaluate(t);
+                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(Vector3.zero, Vector3.up * (piecesCollection.Count - 1), t);
                 }));
                 break;
             case GrowAnimationType.GrowOut:
                 StartCoroutine(Helper.AnimationRoutine(growAnimationDuration, t =>
                 {
-                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(-Vector3.up * piecesCollection.Count, Vector3.zero, GrowAndBounceCurve.Evaluate(t));
+                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(Vector3.zero, Vector3.up * (piecesCollection.Count - 1), GrowAndBounceCurve.Evaluate(t));
                 }));
                 break;
             case GrowAnimationType.Linear:
                 StartCoroutine(Helper.AnimationRoutine(growAnimationDuration, t =>
                 {
-                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(-Vector3.up * piecesCollection.Count, Vector3.zero, t);
+                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(Vector3.zero, Vector3.up * (piecesCollection.Count - 1), t);
                 }));
                 break;
             default:
@@ -87,10 +92,37 @@ public class Tree : PoolableObject
 
     public void RemoveBottomPiece()
     {
-        TreePiece pieceToRemove = piecesCollection.Dequeue();
+        TreePiece pieceToRemove = piecesCollection.Pop();
         pieceToRemove.DestroyPiece();
 
+        //Move the trunk down
+        StopAllCoroutines();
+        Vector3 startPosition = trunkParent.localPosition;
+        Vector3 endPosition = Vector3.up * (piecesCollection.Count - 1);
 
+        StartCoroutine(Helper.AnimationRoutine(collapseAnimationDuration, t =>
+        {
+            trunkParent.localPosition = Vector3.LerpUnclamped(startPosition, endPosition, collapseCurve.Evaluate(t));
+        }));
+
+        //If this was the last piece, we fire the event saying the tree was totally destroyed
+        if (piecesCollection.Count == 0)
+        {
+            treeDestroyed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public override void ReturnToPool()
+    {
+        //Return all remaining pieces to the pool, in case there's still any
+        while (piecesCollection.Count > 0)
+        {
+            TreePiece piece = piecesCollection.Pop();
+            piece.transform.SetParent(null);
+            piece.ReturnToPool();
+        }
+
+        base.ReturnToPool();
     }
 
     public float GetGrowAnimationDuration()

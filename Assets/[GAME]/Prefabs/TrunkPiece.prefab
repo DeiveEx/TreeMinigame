@@ -44,6 +44,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39c94c235ee94254fa8c150476140557, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  renderer: {fileID: 4036362304136548283}
+  destroyAnimDuration: 0.25
+  destroyAnimTargetScale: {x: 2, y: 1, z: 2}
+  destroyAnimCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  defaultMaterial: {fileID: 2100000, guid: 64d859d5a225d5f449de8f8bfe3d9e1f, type: 2}
+  fadeMaterial: {fileID: 2100000, guid: cbe333268466610408aea9c1b3f6cf82, type: 2}
 --- !u!1001 &3442332864857019199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -121,6 +150,12 @@ PrefabInstance:
 --- !u!4 &2904583156617835732 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: db664120ab7a8a44490b7f8dfe96a605,
+    type: 3}
+  m_PrefabInstance: {fileID: 3442332864857019199}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &4036362304136548283 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: db664120ab7a8a44490b7f8dfe96a605,
     type: 3}
   m_PrefabInstance: {fileID: 3442332864857019199}
   m_PrefabAsset: {fileID: 0}

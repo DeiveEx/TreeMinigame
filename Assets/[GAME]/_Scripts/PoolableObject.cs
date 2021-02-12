@@ -11,7 +11,7 @@ public abstract class PoolableObject : MonoBehaviour
         poolParent = pool;
     }
 
-    public void ReturnToPool()
+    public virtual void ReturnToPool()
     {
         poolParent.ReturnObjectToPool(this);
     }

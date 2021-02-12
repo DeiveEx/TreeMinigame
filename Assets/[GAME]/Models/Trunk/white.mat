@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 'mat-trunk '
+  m_Name: white
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ShaderKeywords: BACKSOLID BOTTOMSOLID FRONTSOLID LEFTSOLID RIGHTSOLID TOPSOLID
     UNITY_FOG _ALPHABLEND_ON _AOUV_UV0 _GRADIENTSPACE_WORLD_SPACE _GRADSETTINGS_B_USE_GLOBAL
@@ -82,7 +82,7 @@ Material:
     - _BumpScale: 1
     - _ColorCorrectionEnable: 0
     - _Cull: 2
-    - _Cutoff: 0.5
+    - _Cutoff: 0
     - _DetailNormalMapScale: 1
     - _DontMix: 0
     - _DstBlend: 10
@@ -157,7 +157,7 @@ Material:
     m_Colors:
     - _AOColor: {r: 1, g: 1, b: 1, a: 1}
     - _AmbientColor: {r: 1, g: 1, b: 1, a: 0}
-    - _Color: {r: 0.7019608, g: 0.6313726, b: 0.5568628, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color1_B: {r: 0.7924528, g: 0.6435482, b: 0.53453183, a: 1}
     - _Color1_D: {r: 1, g: 1, b: 1, a: 1}
     - _Color1_F: {r: 0.098039225, g: 0.21176472, b: 0.37647063, a: 1}
