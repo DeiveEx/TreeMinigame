@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e01387aa92b77554f8b62e5456f3d33d, type: 3}
+  m_Name: Tree Object Pool SO
+  m_EditorClassIdentifier: 
+  poolableObject: {fileID: 2757410809354539330, guid: b7461b40d7b10eb4fa5eece6c102cb01,
+    type: 3}
+  initialSize: 1
