@@ -12,6 +12,13 @@ public class GameManager : MonoBehaviour
     private Camera mainCamera;
     private Vector3 cameraOffset;
     private Tree currentTree;
+    private GameState currentState;
+
+    private enum GameState
+    {
+        Wait,
+        Play
+    }
 
     private void Awake()
     {
@@ -24,6 +31,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        currentState = GameState.Play;
         GenerateNewTree();
     }
 
@@ -60,6 +68,8 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator MoveCameraToTree(Tree tree)
     {
+        currentState = GameState.Wait;
+
         yield return new WaitForSeconds(tree.GetGrowAnimationDuration());
 
         Vector3 startPosition = mainCamera.transform.position;
@@ -68,10 +78,23 @@ public class GameManager : MonoBehaviour
         {
             mainCamera.transform.position = Vector3.LerpUnclamped(startPosition, tree.transform.position + cameraOffset, cameraMovementCurve.Evaluate(t));
         }));
+
+        currentState = GameState.Play;
     }
 
     public void RemovePiece()
     {
+        if (currentState == GameState.Wait)
+            return;
+
+        StartCoroutine(RemovePieceRoutine());
+    }
+
+    private IEnumerator RemovePieceRoutine()
+    {
+        currentState = GameState.Wait;
         currentTree.RemoveBottomPiece();
+        yield return new WaitForSeconds(currentTree.GetcCllapseAnimationDuration());
+        currentState = GameState.Play;
     }
 }

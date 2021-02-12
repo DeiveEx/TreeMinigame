@@ -15,7 +15,8 @@ public class Tree : PoolableObject
 
     public event EventHandler treeDestroyed;
 
-    private Stack<TreePiece> piecesCollection = new Stack<TreePiece>();
+    private Queue<TreePiece> piecesCollection = new Queue<TreePiece>();
+    private int treeSize;
 
     private enum GrowAnimationType
     {
@@ -41,9 +42,12 @@ public class Tree : PoolableObject
         //Clear the list of pieces if any still exists
         while (piecesCollection.Count > 0)
         {
-            TreePiece piece = piecesCollection.Pop();
+            TreePiece piece = piecesCollection.Dequeue();
             piece.ReturnToPool();
         }
+
+        treeSize = size;
+        trunkParent.localPosition = Vector3.zero;
 
         //Create new pieces based on the size
         for (int i = 0; i < size; i++)
@@ -51,10 +55,10 @@ public class Tree : PoolableObject
             TreePiece piece = treePiecesPool.GetPooledObject<TreePiece>();
             piece.transform.SetParent(trunkParent);
             piece.transform.SetAsFirstSibling();
-            piece.transform.localPosition = -Vector3.up * i;
+            piece.transform.localPosition = Vector3.up * i;
             piece.transform.localScale = Vector3.one;
             piece.transform.localRotation = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 4) * 90, Vector3.up);
-            piecesCollection.Push(piece);
+            piecesCollection.Enqueue(piece);
         }
     }
 
@@ -62,7 +66,7 @@ public class Tree : PoolableObject
     {
         //Choose a random animation based on the enum
         GrowAnimationType animationType = (GrowAnimationType)UnityEngine.Random.Range(0, Enum.GetNames(typeof(GrowAnimationType)).Length);
-        animationType = GrowAnimationType.GrowOut;
+        animationType = GrowAnimationType.PopOut;
         //Execute the animation based on the chose value
         switch (animationType)
         {
@@ -70,19 +74,18 @@ public class Tree : PoolableObject
                 StartCoroutine(Helper.AnimationRoutine(growAnimationDuration, t =>
                 {
                     trunkParent.localScale = Vector3.one * popOutCurve.Evaluate(t);
-                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(Vector3.zero, Vector3.up * (piecesCollection.Count - 1), t);
                 }));
                 break;
             case GrowAnimationType.GrowOut:
                 StartCoroutine(Helper.AnimationRoutine(growAnimationDuration, t =>
                 {
-                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(Vector3.zero, Vector3.up * (piecesCollection.Count - 1), GrowAndBounceCurve.Evaluate(t));
+                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(-Vector3.up * piecesCollection.Count, Vector3.zero, GrowAndBounceCurve.Evaluate(t));
                 }));
                 break;
             case GrowAnimationType.Linear:
                 StartCoroutine(Helper.AnimationRoutine(growAnimationDuration, t =>
                 {
-                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(Vector3.zero, Vector3.up * (piecesCollection.Count - 1), t);
+                    trunkParent.transform.localPosition = Vector3.LerpUnclamped(-Vector3.up * piecesCollection.Count, Vector3.zero, t);
                 }));
                 break;
             default:
@@ -92,13 +95,13 @@ public class Tree : PoolableObject
 
     public void RemoveBottomPiece()
     {
-        TreePiece pieceToRemove = piecesCollection.Pop();
+        TreePiece pieceToRemove = piecesCollection.Dequeue();
         pieceToRemove.DestroyPiece();
 
         //Move the trunk down
         StopAllCoroutines();
         Vector3 startPosition = trunkParent.localPosition;
-        Vector3 endPosition = Vector3.up * (piecesCollection.Count - 1);
+        Vector3 endPosition = -Vector3.up * (treeSize - piecesCollection.Count);
 
         StartCoroutine(Helper.AnimationRoutine(collapseAnimationDuration, t =>
         {
@@ -117,7 +120,7 @@ public class Tree : PoolableObject
         //Return all remaining pieces to the pool, in case there's still any
         while (piecesCollection.Count > 0)
         {
-            TreePiece piece = piecesCollection.Pop();
+            TreePiece piece = piecesCollection.Dequeue();
             piece.transform.SetParent(null);
             piece.ReturnToPool();
         }
@@ -128,5 +131,10 @@ public class Tree : PoolableObject
     public float GetGrowAnimationDuration()
     {
         return growAnimationDuration;
+    }
+
+    public float GetcCllapseAnimationDuration()
+    {
+        return collapseAnimationDuration;
     }
 }
