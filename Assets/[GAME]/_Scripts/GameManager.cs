@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
         treeCountInRound--;
     }
 
-    private void TreeDestroyedEventHandler(object sender, System.EventArgs e)
+    private void TreeDestroyedEventHandler(object sender, EventArgs e)
     {
         GenerateNewTree();
     }
