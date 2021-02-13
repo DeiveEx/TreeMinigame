@@ -10,11 +10,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float cameraMovementDuration;
     [SerializeField] private AnimationCurve cameraMovementCurve;
 
+    public event EventHandler roundFinished;
+
     private Camera mainCamera;
     private int treeCountInRound;
     private Vector3 cameraOffset;
     private Tree currentTree;
     private GameState currentState;
+    private Coroutine cameraMovement;
 
     private enum GameState
     {
@@ -40,7 +43,10 @@ public class GameManager : MonoBehaviour
     public void StartNewRound()
     {
         if (currentTree != null)
+        {
+            currentTree.treeDestroyed -= TreeDestroyedEventHandler;
             currentTree.ReturnToPool();
+        }
 
         currentTree = null;
         treeCountInRound = UnityEngine.Random.Range(minMaxTreesPerRound.x, minMaxTreesPerRound.y + 1); //Random.Range with ints is exclusive for the max value, so we add 1
@@ -49,12 +55,14 @@ public class GameManager : MonoBehaviour
 
     public void GenerateNewTree()
     {
-        StopAllCoroutines();
+        //Stop the camera movement if it's still moving
+        if (cameraMovement != null)
+            StopCoroutine(cameraMovement);
 
         //Check if we finished the current round
         if (treeCountInRound <= 0)
         {
-            Debug.Log("Round finished");
+            roundFinished?.Invoke(this, EventArgs.Empty);
             StartNewRound();
             return;
         }
@@ -69,7 +77,7 @@ public class GameManager : MonoBehaviour
         {
             previousTreePosition = currentTree.transform.position;
             currentTree.treeDestroyed -= TreeDestroyedEventHandler;
-            StartCoroutine(ReturnTreeToPoolRoutine(currentTree)); //Just so when click the "next tree" button the current doesn't suddenly disappear, we return it to the pool after the camera already moved
+            StartCoroutine(ReturnTreeToPoolRoutine(currentTree)); //Just so when we click the "new tree" button the current doesn't suddenly disappear, we return it to the pool after the camera already moved
         }
 
         //Position the new tree behind the current tree and to a random side
@@ -80,7 +88,7 @@ public class GameManager : MonoBehaviour
         currentTree.GenerateTree();
 
         //Move the camera
-        StartCoroutine(MoveCameraToTree(tree));
+        cameraMovement = StartCoroutine(MoveCameraToTree(tree)); //We keep a reference of this coroutine so we stop it in case this method is called again before the camera movement ends
 
         treeCountInRound--;
     }
@@ -103,6 +111,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(tree.GetGrowAnimationDuration());
 
         Vector3 startPosition = mainCamera.transform.position;
+        yield return new WaitForSeconds(tree.GetGrowAnimationDuration());
 
         yield return StartCoroutine(Helper.AnimationRoutine(cameraMovementDuration, t =>
         {
@@ -123,8 +132,16 @@ public class GameManager : MonoBehaviour
     private IEnumerator RemovePieceRoutine()
     {
         currentState = GameState.Wait;
+
+        //Check if this is the last piece of the tree.
+        bool isLastPiece = currentTree.GetRemainingPiecesCount() == 1;
+
+        //Remove the piece and wait for the collapse animation to end
         currentTree.RemoveBottomPiece();
-        yield return new WaitForSeconds(currentTree.GetcCllapseAnimationDuration());
-        currentState = GameState.Play;
+        yield return new WaitForSeconds(currentTree.GetCollapseAnimationDuration());
+
+        //If we removed the last piece of the tree, we don't change the state back to Play because we know the camera will move to the next tree
+        if (!isLastPiece)
+            currentState = GameState.Play;
     }
 }

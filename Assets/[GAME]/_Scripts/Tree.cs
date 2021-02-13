@@ -136,8 +136,13 @@ public class Tree : PoolableObject
         return growAnimationDuration;
     }
 
-    public float GetcCllapseAnimationDuration()
+    public float GetCollapseAnimationDuration()
     {
         return collapseAnimationDuration;
+    }
+
+    public int GetRemainingPiecesCount()
+    {
+        return piecesCollection.Count;
     }
 }
