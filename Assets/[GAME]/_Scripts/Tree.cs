@@ -28,7 +28,7 @@ public class Tree : PoolableObject
     public void GenerateTree()
     {
         //Generate a new trunk with a random size
-        GenerateTrunk(UnityEngine.Random.Range(minMaxPiecesAmount.x, minMaxPiecesAmount.y));
+        GenerateTrunk(UnityEngine.Random.Range(minMaxPiecesAmount.x, minMaxPiecesAmount.y + 1)); //Random.Range with ints is exclusive for the max value, so we add 1
         AnimateTreeSpawn();
     }
 
@@ -66,8 +66,8 @@ public class Tree : PoolableObject
     {
         //Choose a random animation based on the enum
         GrowAnimationType animationType = (GrowAnimationType)UnityEngine.Random.Range(0, Enum.GetNames(typeof(GrowAnimationType)).Length);
-        animationType = GrowAnimationType.PopOut;
-        //Execute the animation based on the chose value
+
+        //Execute the animation based on the chosen value
         switch (animationType)
         {
             case GrowAnimationType.PopOut:
@@ -95,6 +95,9 @@ public class Tree : PoolableObject
 
     public void RemoveBottomPiece()
     {
+        if (piecesCollection.Count == 0)
+            return;
+
         TreePiece pieceToRemove = piecesCollection.Dequeue();
         pieceToRemove.DestroyPiece();
 

@@ -14,19 +14,28 @@ public class TreePiece : PoolableObject
 
     private void OnEnable()
     {
+        //Reset the material
         renderer.sharedMaterial = defaultMaterial;
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
     }
 
     public void DestroyPiece()
     {
+        //Remove the parent so when the tree is returned to its own pool, it doesn't bring this piece with it
         transform.parent = null;
+
+        //Set the colors and material for the fade effect
         Color white = Color.white;
         Color clear = white;
-        clear.a = 0;
+        clear.a = 0; //Unity's "Clear" color is (0, 0, 0, 0), but we want (1, 1, 1, 0)
 
         renderer.sharedMaterial = fadeMaterial;
 
-        //The body of the destroy animation
+        //The actual body of the destroy animation
         Action<float> body = t =>
         {
             transform.localScale = Vector3.LerpUnclamped(Vector3.one, destroyAnimTargetScale, destroyAnimCurve.Evaluate(t));

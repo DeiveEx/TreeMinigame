@@ -714,6 +714,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   treePool: {fileID: 11400000, guid: ef11139429c01784780e55b5746e4454, type: 2}
+  minMaxTreesPerRound: {x: 5, y: 10}
   newTreeDistance: 5
   cameraMovementDuration: 0.5
   cameraMovementCurve:
@@ -999,7 +1000,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: c584b5e8a29eca646b7b353e0f00f185, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
